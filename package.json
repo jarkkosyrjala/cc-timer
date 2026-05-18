@@ -1,12 +1,12 @@
 {
   "name": "cc-timer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Cross-platform CLI to schedule Claude Code background agents after a delay or at a specific local time.",
   "license": "ISC",
   "author": "Jarkko Syrjälä",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jarkkosyrjala/cc-timer.git"
+    "url": "git+https://github.com/jarkkosyrjala/cc-timer.git"
   },
   "homepage": "https://github.com/jarkkosyrjala/cc-timer#readme",
   "bugs": {
@@ -30,7 +30,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/mark-cli-executable.mjs",
     "dev": "tsx src/cli.ts",
     "prepublishOnly": "npm test && npm run build",
     "test": "vitest run",
