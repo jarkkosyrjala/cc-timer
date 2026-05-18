@@ -41,8 +41,10 @@ function buildProgram(claudeArgs: string[]): Command {
 
   // Default action: schedule new agents.
   program
-    .argument("[delay]", 'Relative delay like "2h" or "1d2h30m"')
-    .argument("[tasks...]", "One or more task prompts")
+    .argument(
+      "[items...]",
+      'Delay followed by tasks, or just tasks when using --at',
+    )
     .option(
       "--task <text>",
       "Add one task (repeatable)",
@@ -74,12 +76,15 @@ function buildProgram(claudeArgs: string[]): Command {
     )
     .option("--log-file <path>", "Explicit log output file")
     .option("--json", "Machine-readable JSON output", false)
-    .action(async (delay: string | undefined, tasks: string[], options) => {
+    .action(async (items: string[], options) => {
       try {
+        const scheduleItems = items ?? [];
+        const delay = options.at ? undefined : scheduleItems[0];
+        const positional = options.at ? scheduleItems : scheduleItems.slice(1);
         const res = await runSchedule({
           delay,
           at: options.at,
-          positional: tasks ?? [],
+          positional,
           taskFlags: options.task ?? [],
           file: options.file,
           dryRun: Boolean(options.dryRun),

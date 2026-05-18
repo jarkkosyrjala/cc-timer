@@ -26,6 +26,21 @@ describe("parseAt", () => {
     expect(dueAt.getMinutes()).toBe(30);
   });
 
+  it("parses hour-only 3 as 03:00", () => {
+    const now = new Date(2026, 4, 18, 2, 0, 0);
+    const { dueAt } = parseAt("3", now);
+    expect(dueAt.getHours()).toBe(3);
+    expect(dueAt.getMinutes()).toBe(0);
+    expect(dueAt.getDate()).toBe(18);
+  });
+
+  it("parses hour-only 3pm", () => {
+    const now = new Date(2026, 4, 18, 10, 0, 0);
+    const { dueAt } = parseAt("3pm", now);
+    expect(dueAt.getHours()).toBe(15);
+    expect(dueAt.getMinutes()).toBe(0);
+  });
+
   it("parses 12:00am as midnight", () => {
     const now = new Date(2026, 4, 18, 23, 30, 0);
     const { dueAt } = parseAt("12:00am", now);

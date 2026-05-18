@@ -1,6 +1,6 @@
 {
   "name": "cc-timer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cross-platform CLI to schedule Claude Code background agents after a delay or at a specific local time.",
   "license": "ISC",
   "author": "Jarkko Syrjälä",

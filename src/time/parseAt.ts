@@ -6,8 +6,50 @@ export interface ParsedAt {
 }
 
 const TIME_RE = /^(\d{1,2}):(\d{2})(?:\s*(am|pm))?$/i;
+const HOUR_ONLY_RE = /^(\d{1,2})(?:\s*(am|pm))?$/i;
 const DATETIME_RE =
   /^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/;
+
+function normalizeHour(raw: string, hour: number, ampm?: string): number {
+  if (ampm) {
+    if (hour < 1 || hour > 12) {
+      throw new CcTimerError(`[Error] Invalid time "${raw}".`);
+    }
+    if (ampm === "pm" && hour !== 12) return hour + 12;
+    if (ampm === "am" && hour === 12) return 0;
+    return hour;
+  }
+
+  if (hour > 23) {
+    throw new CcTimerError(`[Error] Invalid time "${raw}".`);
+  }
+  return hour;
+}
+
+function buildNextOccurrence(
+  raw: string,
+  now: Date,
+  hour: number,
+  minute: number,
+): ParsedAt {
+  if (minute > 59) {
+    throw new CcTimerError(`[Error] Invalid time "${raw}".`);
+  }
+
+  const candidate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hour,
+    minute,
+    0,
+    0,
+  );
+  if (candidate.getTime() <= now.getTime()) {
+    candidate.setDate(candidate.getDate() + 1);
+  }
+  return { dueAt: candidate, input: String(raw).trim() };
+}
 
 /**
  * Parse an exact local time string into a future Date.
@@ -57,38 +99,17 @@ export function parseAt(raw: string, now: Date = new Date()): ParsedAt {
 
   const t = TIME_RE.exec(input);
   if (t) {
-    let hour = Number(t[1]);
-    const minute = Number(t[2]);
-    const ampm = t[3]?.toLowerCase();
-    if (ampm) {
-      if (hour < 1 || hour > 12) {
-        throw new CcTimerError(`[Error] Invalid time "${raw}".`);
-      }
-      if (ampm === "pm" && hour !== 12) hour += 12;
-      if (ampm === "am" && hour === 12) hour = 0;
-    } else if (hour > 23) {
-      throw new CcTimerError(`[Error] Invalid time "${raw}".`);
-    }
-    if (minute > 59) {
-      throw new CcTimerError(`[Error] Invalid time "${raw}".`);
-    }
+    const hour = normalizeHour(raw, Number(t[1]), t[3]?.toLowerCase());
+    return buildNextOccurrence(raw, now, hour, Number(t[2]));
+  }
 
-    const candidate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      hour,
-      minute,
-      0,
-      0,
-    );
-    if (candidate.getTime() <= now.getTime()) {
-      candidate.setDate(candidate.getDate() + 1);
-    }
-    return { dueAt: candidate, input };
+  const hourOnly = HOUR_ONLY_RE.exec(input);
+  if (hourOnly) {
+    const hour = normalizeHour(raw, Number(hourOnly[1]), hourOnly[2]?.toLowerCase());
+    return buildNextOccurrence(raw, now, hour, 0);
   }
 
   throw new CcTimerError(
-    `[Error] Invalid time "${raw}". Try "17:30", "5:30pm", or "2026-05-19 09:00".`,
+    `[Error] Invalid time "${raw}". Try "17:30", "3pm", or "2026-05-19 09:00".`,
   );
 }

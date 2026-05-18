@@ -91,6 +91,25 @@ describe("integration", () => {
     expect(ERROR_PRELUDE_LINES.some((line) => res.stderr.includes(line))).toBe(true);
   });
 
+  it("treats bare positionals as tasks when --at is used", () => {
+    const cliPath = path.resolve(__dirname, "..", "dist", "cli.js");
+    const res = spawnSync(
+      "node",
+      [cliPath, "--at", "3", "debug if this is the real life", "--dry-run", "--json"],
+      {
+        cwd: path.resolve(__dirname, ".."),
+        env: process.env,
+        encoding: "utf8",
+      },
+    );
+
+    expect(res.status).toBe(0);
+    const parsed = JSON.parse(res.stdout);
+    expect(parsed.dryRun).toBe(true);
+    expect(parsed.tasks).toEqual(["debug if this is the real life"]);
+    expect(parsed.delaySeconds).toBeGreaterThan(0);
+  });
+
   it("dispatches tasks after a short delay (sequential, in order)", async () => {
     const res = await runSchedule({
       delay: "2s",
