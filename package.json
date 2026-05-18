@@ -12,6 +12,15 @@
   "bugs": {
     "url": "https://github.com/jarkkosyrjala/cc-timer/issues"
   },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "cli",
+    "scheduler",
+    "timer",
+    "automation",
+    "background-jobs"
+  ],
   "type": "module",
   "bin": {
     "cc-timer": "dist/cli.js"
@@ -23,6 +32,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli.ts",
+    "prepublishOnly": "npm test && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
